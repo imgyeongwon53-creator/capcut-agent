@@ -216,3 +216,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# CapCut Agent runtime dirs
+uploads/
+cache/
+drafts/
+*.mp4
+*.mov
+.python-version
+uv.lock

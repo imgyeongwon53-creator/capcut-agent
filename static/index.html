@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CapCut Agent</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --card: #161616;
+    --border: #222;
+    --text: #e5e5e5;
+    --muted: #737373;
+    --accent: #22c55e;
+    --error: #ef4444;
+    --radius: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 680px;
+    padding: 48px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .header { text-align: center; }
+  .header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
+  .header p { color: var(--muted); margin-top: 6px; font-size: 13px; }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  /* Dropzone */
+  #dropzone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  #dropzone.drag-over { border-color: var(--accent); background: rgba(34,197,94,.05); }
+  #dropzone.has-file { border-style: solid; border-color: var(--border); padding: 0; overflow: hidden; }
+  #dropzone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .drop-icon { font-size: 32px; margin-bottom: 12px; opacity: .6; }
+  .drop-text { color: var(--muted); font-size: 13px; }
+  .drop-text span { color: var(--accent); }
+
+  /* Video preview */
+  #preview {
+    width: 100%;
+    max-height: 300px;
+    display: block;
+    background: #000;
+    border-radius: var(--radius);
+  }
+
+  /* Upload progress bar */
+  .upload-bar-wrap {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+  .upload-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.2s;
+  }
+  .upload-label { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+  /* File info row */
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    font-size: 13px;
+  }
+  .file-info .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-info .size { color: var(--muted); white-space: nowrap; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, background 0.15s;
+    border: none;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0a0a0a;
+    width: 100%;
+  }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    width: 100%;
+  }
+  .btn-outline:hover { background: rgba(34,197,94,.08); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: #444; }
+
+  /* Stage progress */
+  .stages { display: flex; flex-direction: column; gap: 12px; }
+  .stage-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .stage-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .stage-row.active .stage-dot { background: var(--accent); animation: pulse 1s infinite; }
+  .stage-row.done .stage-dot { background: var(--accent); }
+  .stage-row.error .stage-dot { background: var(--error); }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
+  }
+  .stage-name { flex: 1; font-size: 13px; }
+  .stage-status { font-size: 12px; color: var(--muted); }
+  .stage-row.active .stage-status { color: var(--accent); }
+  .stage-row.done .stage-status { color: var(--accent); }
+  .stage-row.error .stage-status { color: var(--error); }
+
+  /* Spinner */
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-value { font-size: 22px; font-weight: 600; color: var(--accent); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* Transcript */
+  .transcript-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .transcript-list::-webkit-scrollbar { width: 4px; }
+  .transcript-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .transcript-item {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .ts-time { color: var(--accent); white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .ts-text { color: var(--text); }
+
+  /* Cuts list */
+  .cuts-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+  .cut-chip {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(239,68,68,.12);
+    color: var(--error);
+    border: 1px solid rgba(239,68,68,.2);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Section label */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* Error box */
+  .error-box {
+    background: rgba(239,68,68,.08);
+    border: 1px solid rgba(239,68,68,.25);
+    border-radius: var(--radius);
+    padding: 14px;
+    color: var(--error);
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--border); }
+
+  /* Footer */
+  footer {
+    margin-top: auto;
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+    width: 100%;
+  }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>CapCut Agent</h1>
+    <p>한국어 강의 영상 자동 편집 · 침묵/필러/NG 제거 + 자막 생성</p>
+  </div>
+
+  <!-- Upload card -->
+  <div class="card">
+    <div id="dropzone">
+      <input type="file" id="file-input" accept=".mp4,.mov">
+      <div id="drop-placeholder">
+        <div class="drop-icon">🎬</div>
+        <div class="drop-text">영상을 드래그하거나 <span>클릭하여 선택</span></div>
+        <div class="drop-text" style="margin-top:4px">MP4 · MOV</div>
+      </div>
+      <video id="preview" class="hidden" controls></video>
+    </div>
+    <div id="upload-progress" class="hidden">
+      <div class="upload-bar-wrap"><div class="upload-bar" id="upload-bar"></div></div>
+      <div class="upload-label" id="upload-label">업로드 중…</div>
+    </div>
+    <div id="file-info-row" class="file-info hidden">
+      <span class="name" id="file-name"></span>
+      <span class="size" id="file-size"></span>
+      <button class="btn btn-ghost" id="reset-btn" style="padding:6px 12px;font-size:12px">초기화</button>
+    </div>
+  </div>
+
+  <!-- Start button -->
+  <button class="btn btn-primary" id="start-btn" disabled>편집 시작</button>
+
+  <!-- Pipeline progress -->
+  <div class="card hidden" id="pipeline-card">
+    <div class="stages" id="stages">
+      <div class="stage-row" id="stage-silence" data-stage="silence">
+        <div class="stage-dot"></div>
+        <div class="stage-name">① 무음 구간 감지</div>
+        <div class="stage-status">대기</div>
+      </div>
+      <div class="stage-row" id="stage-asr" data-stage="asr">
+        <div class="stage-dot"></div>
+        <div class="stage-name">② 음성 인식 (STT)</div>
+        <div class="stage-status">대기</div>
+      </div>
+      <div class="stage-row" id="stage-filler" data-stage="filler">
+        <div class="stage-dot"></div>
+        <div class="stage-name">③ 필러/NG 감지</div>
+        <div class="stage-status">대기</div>
+      </div>
+      <div class="stage-row" id="stage-draft" data-stage="draft">
+        <div class="stage-dot"></div>
+        <div class="stage-name">④ CapCut 드래프트 생성</div>
+        <div class="stage-status">대기</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="hidden" id="error-card">
+    <div class="error-box" id="error-msg"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="card hidden" id="result-card">
+    <div class="section-label">편집 결과</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-original">—</div>
+        <div class="stat-label">원본 길이</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-edited">—</div>
+        <div class="stat-label">편집 후 길이</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-reduction">—</div>
+        <div class="stat-label">단축률</div>
+      </div>
+    </div>
+
+    <hr class="divider" style="margin:20px 0">
+
+    <div id="cuts-section" class="hidden">
+      <div class="section-label">제거된 구간 (<span id="cut-count">0</span>개)</div>
+      <div class="cuts-list" id="cuts-list"></div>
+      <hr class="divider" style="margin:16px 0">
+    </div>
+
+    <div class="section-label">자막 / 트랜스크립트</div>
+    <div class="transcript-list" id="transcript-list"></div>
+
+    <hr class="divider" style="margin:20px 0">
+
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-outline" id="open-capcut-btn">CapCut에서 열기</button>
+      <button class="btn btn-ghost" id="new-video-btn" style="width:auto;padding:10px 16px">새 영상</button>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center" id="draft-name-label"></div>
+  </div>
+</div>
+
+<footer>
+  박정원 교수 · 한국외국어대학교 중국학대학 중국언어문화학부<br>
+  국가교육위원회 AI특별위원회 위원 · 교육부 AI인재양성추진단<br>
+  K-AI 교육네트워크 (<a href="https://k-ai.it.kr/" target="_blank">k-ai.it.kr</a>) ·
+  <a href="https://kletter.kr" target="_blank">kletter.kr</a> ·
+  <a href="https://kteacher.kr" target="_blank">kteacher.kr</a>
+</footer>
+
+<script>
+// TRAP 3: handle file:// protocol where window.location.origin === "null"
+const API = (window.location.origin && window.location.origin !== 'null')
+  ? window.location.origin
+  : 'http://localhost:8000';
+
+const fileInput     = document.getElementById('file-input');
+const dropzone      = document.getElementById('dropzone');
+const dropPlaceholder = document.getElementById('drop-placeholder');
+const preview       = document.getElementById('preview');
+const uploadProgress = document.getElementById('upload-progress');
+const uploadBar     = document.getElementById('upload-bar');
+const uploadLabel   = document.getElementById('upload-label');
+const fileInfoRow   = document.getElementById('file-info-row');
+const fileName      = document.getElementById('file-name');
+const fileSize      = document.getElementById('file-size');
+const startBtn      = document.getElementById('start-btn');
+const resetBtn      = document.getElementById('reset-btn');
+const pipelineCard  = document.getElementById('pipeline-card');
+const errorCard     = document.getElementById('error-card');
+const errorMsg      = document.getElementById('error-msg');
+const resultCard    = document.getElementById('result-card');
+const openCapcutBtn = document.getElementById('open-capcut-btn');
+const newVideoBtn   = document.getElementById('new-video-btn');
+const draftNameLabel = document.getElementById('draft-name-label');
+
+let currentFileId = null;
+
+function fmtSize(bytes) {
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function fmtDuration(secs) {
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// Drag & drop
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  if (!/\.(mp4|mov)$/i.test(file.name)) {
+    alert('MP4 또는 MOV 파일만 업로드할 수 있습니다.');
+    return;
+  }
+
+  // Show preview
+  dropPlaceholder.classList.add('hidden');
+  preview.classList.remove('hidden');
+  preview.src = URL.createObjectURL(file);
+  dropzone.classList.add('has-file');
+
+  // Show file info
+  fileName.textContent = file.name;
+  fileSize.textContent = fmtSize(file.size);
+  fileInfoRow.classList.remove('hidden');
+
+  // Upload
+  uploadProgress.classList.remove('hidden');
+  uploadFile(file);
+}
+
+function uploadFile(file) {
+  const xhr = new XMLHttpRequest();
+  const fd = new FormData();
+  fd.append('file', file);
+
+  xhr.upload.addEventListener('progress', e => {
+    if (e.lengthComputable) {
+      const pct = Math.round(e.loaded / e.total * 100);
+      uploadBar.style.width = pct + '%';
+      uploadLabel.textContent = `업로드 중… ${pct}%`;
+    }
+  });
+
+  xhr.addEventListener('load', () => {
+    if (xhr.status === 200) {
+      const resp = JSON.parse(xhr.responseText);
+      currentFileId = resp.file_id;
+      uploadLabel.textContent = '업로드 완료 ✓';
+      uploadBar.style.width = '100%';
+      startBtn.disabled = false;
+    } else {
+      uploadLabel.textContent = '업로드 실패';
+      uploadBar.style.background = 'var(--error)';
+    }
+  });
+
+  xhr.addEventListener('error', () => {
+    uploadLabel.textContent = '업로드 실패 (네트워크 오류)';
+  });
+
+  xhr.open('POST', `${API}/upload`);
+  xhr.send(fd);
+}
+
+// Start processing
+startBtn.addEventListener('click', () => {
+  if (!currentFileId) return;
+  startBtn.disabled = true;
+  pipelineCard.classList.remove('hidden');
+  resultCard.classList.add('hidden');
+  errorCard.classList.add('hidden');
+  resetStages();
+  runPipeline(currentFileId);
+});
+
+function resetStages() {
+  document.querySelectorAll('.stage-row').forEach(row => {
+    row.classList.remove('active', 'done', 'error');
+    row.querySelector('.stage-status').textContent = '대기';
+    const spin = row.querySelector('.spinner');
+    if (spin) spin.remove();
+  });
+}
+
+const STAGE_LABELS = {
+  silence: '① 무음 구간 감지',
+  asr:     '② 음성 인식 (STT)',
+  filler:  '③ 필러/NG 감지',
+  draft:   '④ CapCut 드래프트 생성',
+};
+
+function setStage(stage, status, info = '') {
+  const row = document.getElementById(`stage-${stage}`);
+  if (!row) return;
+  const statusEl = row.querySelector('.stage-status');
+  const existingSpinner = row.querySelector('.spinner');
+
+  row.classList.remove('active', 'done', 'error');
+
+  if (status === 'start') {
+    row.classList.add('active');
+    statusEl.textContent = '처리 중…';
+    if (!existingSpinner) {
+      const sp = document.createElement('div');
+      sp.className = 'spinner';
+      row.appendChild(sp);
+    }
+  } else if (status === 'done') {
+    row.classList.add('done');
+    statusEl.textContent = info || '완료';
+    if (existingSpinner) existingSpinner.remove();
+  } else if (status === 'error') {
+    row.classList.add('error');
+    statusEl.textContent = '오류';
+    if (existingSpinner) existingSpinner.remove();
+  }
+}
+
+function runPipeline(fileId) {
+  const es = new EventSource(`${API}/process/${fileId}`);
+
+  es.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    const { stage, status } = data;
+
+    if (stage === 'error') {
+      errorMsg.textContent = data.message || '알 수 없는 오류';
+      errorCard.classList.remove('hidden');
+      es.close();
+      startBtn.disabled = false;
+      return;
+    }
+
+    if (status === 'start') {
+      setStage(stage, 'start');
+    } else if (status === 'done') {
+      let info = '완료';
+      if (stage === 'silence') info = `무음 ${data.silence_count}구간 / 보존 ${data.keep_count}구간`;
+      if (stage === 'asr')     info = `${data.segment_count}개 세그먼트`;
+      if (stage === 'filler')  info = `컷 ${data.cut_count}개 감지`;
+      if (stage === 'draft')   info = `드래프트 저장 완료`;
+      setStage(stage, 'done', info);
+
+      if (stage === 'draft') {
+        es.close();
+        showResults(data);
+      }
+    }
+  };
+
+  es.onerror = () => {
+    errorMsg.textContent = '서버 연결이 끊어졌습니다.';
+    errorCard.classList.remove('hidden');
+    es.close();
+    startBtn.disabled = false;
+  };
+}
+
+function showResults(data) {
+  document.getElementById('stat-original').textContent = fmtDuration(data.original_duration);
+  document.getElementById('stat-edited').textContent   = fmtDuration(data.edited_duration);
+  document.getElementById('stat-reduction').textContent = data.reduction_percent + '%';
+
+  // Cuts
+  const cutsList = document.getElementById('cuts-list');
+  const cutsSection = document.getElementById('cuts-section');
+  cutsList.innerHTML = '';
+  if (data.cuts && data.cuts.length > 0) {
+    cutsSection.classList.remove('hidden');
+    document.getElementById('cut-count').textContent = data.cuts.length;
+    data.cuts.forEach(c => {
+      const chip = document.createElement('div');
+      chip.className = 'cut-chip';
+      chip.textContent = `${fmtTs(c.start)} – ${fmtTs(c.end)}`;
+      cutsList.appendChild(chip);
+    });
+  } else {
+    cutsSection.classList.add('hidden');
+  }
+
+  // Transcript
+  const transcriptList = document.getElementById('transcript-list');
+  transcriptList.innerHTML = '';
+  if (data.transcript) {
+    data.transcript.forEach(seg => {
+      const item = document.createElement('div');
+      item.className = 'transcript-item';
+      item.innerHTML = `<span class="ts-time">${fmtTs(seg.start)}</span><span class="ts-text">${escHtml(seg.text)}</span>`;
+      transcriptList.appendChild(item);
+    });
+  }
+
+  draftNameLabel.textContent = `드래프트: ${data.draft_name}`;
+  resultCard.classList.remove('hidden');
+}
+
+function fmtTs(secs) {
+  const m = Math.floor(secs / 60);
+  const s = (secs % 60).toFixed(1);
+  return `${m}:${String(Math.floor(secs % 60)).padStart(2,'0')}.${String(Math.round((secs % 1) * 10)).padStart(1,'0')}`;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Open CapCut
+openCapcutBtn.addEventListener('click', () => {
+  fetch(`${API}/open-capcut`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' })
+    .then(r => r.json())
+    .then(d => { if (d.status !== 'ok') alert('CapCut 실행 오류: ' + d.message); })
+    .catch(() => alert('서버 연결 오류'));
+});
+
+// Reset / New video
+function doReset() {
+  currentFileId = null;
+  fileInput.value = '';
+  preview.src = '';
+  preview.classList.add('hidden');
+  dropPlaceholder.classList.remove('hidden');
+  dropzone.classList.remove('has-file');
+  uploadProgress.classList.add('hidden');
+  uploadBar.style.width = '0%';
+  uploadLabel.textContent = '업로드 중…';
+  fileInfoRow.classList.add('hidden');
+  startBtn.disabled = true;
+  pipelineCard.classList.add('hidden');
+  resultCard.classList.add('hidden');
+  errorCard.classList.add('hidden');
+  resetStages();
+}
+
+resetBtn.addEventListener('click', doReset);
+newVideoBtn.addEventListener('click', doReset);
+</script>
+</body>
+</html>
