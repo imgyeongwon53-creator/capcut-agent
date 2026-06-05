@@ -44,6 +44,8 @@ def _build_draft_sync(
     stem: str,
 ) -> str:
     from pycapcut import DraftFolder, VideoMaterial, VideoSegment, TextSegment, TextStyle, trange, SEC  # type: ignore
+    from pycapcut.segment import ClipSettings  # type: ignore
+    from pycapcut.text_segment import TextBorder  # type: ignore
 
     # TRAP 6: unique name to avoid WinError 32 when CapCut has draft folder open
     draft_name = f"auto_{stem}_{datetime.now().strftime('%H%M%S')}"
@@ -70,7 +72,7 @@ def _build_draft_sync(
         # pyCapCut rule 2: trange(start, duration) — 2nd arg is duration, NOT end
         video_seg = VideoSegment(
             mat,
-            trange=trange(int(tl_cursor * SEC), duration_us),
+            trange(int(tl_cursor * SEC), duration_us),
             source_timerange=trange(src_start_us, duration_us),
         )
         draft.add_segment(video_seg)
@@ -88,13 +90,13 @@ def _build_draft_sync(
         style = TextStyle(
             color=(1.0, 1.0, 1.0),
             bold=True,
-            border_color=(0.0, 0.0, 0.0),
         )
         text_seg = TextSegment(
-            text=seg["text"],
-            trange=trange(int(tl_start * SEC), int((tl_end - tl_start) * SEC)),
+            seg["text"],
+            trange(int(tl_start * SEC), int((tl_end - tl_start) * SEC)),
             style=style,
-            transform_y=-0.8,  # TRAP 4: negative = bottom of screen
+            border=TextBorder(),
+            clip_settings=ClipSettings(transform_y=-0.8),
         )
         draft.add_segment(text_seg)
 

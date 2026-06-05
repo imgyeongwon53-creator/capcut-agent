@@ -55,6 +55,8 @@ def _split_subtitle_lines(text: str, max_chars: int = 22) -> List[str]:
 
 def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
     from pycapcut import DraftFolder, VideoMaterial, VideoSegment, TextSegment, TextStyle, trange, SEC  # type: ignore
+    from pycapcut.segment import ClipSettings  # type: ignore
+    from pycapcut.text_segment import TextBorder  # type: ignore
 
     total_duration = float(script.get("total_duration", 300))
     sections = script.get("sections", [])
@@ -73,21 +75,22 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
 
     draft.add_segment(VideoSegment(
         mat,
-        trange=trange(0, mat_duration),
+        trange(0, mat_duration),
         source_timerange=trange(0, mat_duration),
     ))
 
-    white_bold = TextStyle(color=(1.0, 1.0, 1.0), bold=True, border_color=(0.0, 0.0, 0.0))
-    green_bold = TextStyle(color=(0.133, 0.773, 0.369), bold=True, border_color=(0.0, 0.0, 0.0))
-    white_sub  = TextStyle(color=(1.0, 1.0, 1.0), border_color=(0.0, 0.0, 0.0))
+    white_bold = TextStyle(color=(1.0, 1.0, 1.0), bold=True)
+    green_bold = TextStyle(color=(0.133, 0.773, 0.369), bold=True)
+    white_sub  = TextStyle(color=(1.0, 1.0, 1.0))
+    black_border = TextBorder()
 
     # Title card — adaptive duration (10% of total, max 4s)
     title_dur_s = min(4.0, max(1.0, total_duration * 0.1))
     draft.add_segment(TextSegment(
-        text=title,
-        trange=trange(0, int(title_dur_s * SEC)),
+        title,
+        trange(0, int(title_dur_s * SEC)),
         style=white_bold,
-        transform_y=0.0,
+        border=black_border,
     ))
 
     cursor = title_dur_s
@@ -104,10 +107,11 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
         # ── Section heading: upper area, first 20% of section (max 3s)
         heading_dur_s = min(3.0, max(0.5, duration * 0.2))
         draft.add_segment(TextSegment(
-            text=heading,
-            trange=trange(int(cursor * SEC), int(heading_dur_s * SEC)),
+            heading,
+            trange(int(cursor * SEC), int(heading_dur_s * SEC)),
             style=green_bold,
-            transform_y=0.7,   # top area (negative=down, positive=up)
+            border=black_border,
+            clip_settings=ClipSettings(transform_y=0.7),
         ))
 
         # ── Key points: center, evenly spread
@@ -116,10 +120,10 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
             for i, point in enumerate(key_points):
                 pt_start = cursor + i * pt_dur
                 draft.add_segment(TextSegment(
-                    text=f"• {point}",
-                    trange=trange(int(pt_start * SEC), int(pt_dur * SEC)),
-                    style=TextStyle(color=(0.9, 0.9, 0.9), border_color=(0.0, 0.0, 0.0)),
-                    transform_y=0.0,   # center
+                    f"• {point}",
+                    trange(int(pt_start * SEC), int(pt_dur * SEC)),
+                    style=TextStyle(color=(0.9, 0.9, 0.9)),
+                    border=black_border,
                 ))
 
         # ── 한글 자막: script text split into lines, bottom
@@ -129,10 +133,11 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
             for i, line in enumerate(lines):
                 line_start = cursor + i * line_dur
                 draft.add_segment(TextSegment(
-                    text=line,
-                    trange=trange(int(line_start * SEC), int(line_dur * SEC)),
+                    line,
+                    trange(int(line_start * SEC), int(line_dur * SEC)),
                     style=white_sub,
-                    transform_y=-0.8,   # TRAP 4: bottom subtitle position
+                    border=black_border,
+                    clip_settings=ClipSettings(transform_y=-0.8),
                 ))
 
         cursor += duration
