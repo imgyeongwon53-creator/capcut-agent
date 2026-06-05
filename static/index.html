@@ -917,7 +917,9 @@ document.getElementById('gen-template-btn').addEventListener('click', async () =
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ topic, duration_minutes: duration, num_sections: sections }),
     });
-    currentScript = await resp.json();
+    const result = await resp.json();
+    if (!resp.ok) throw new Error(result.detail || JSON.stringify(result));
+    currentScript = result;
     renderScriptEditor(currentScript);
     document.getElementById('script-editor').classList.remove('hidden');
     document.getElementById('script-result').classList.add('hidden');

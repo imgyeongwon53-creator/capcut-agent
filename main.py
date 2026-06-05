@@ -168,10 +168,13 @@ async def script_template(request: Request):
 
     if _has_gemini():
         from core.script_generator import generate_script
-        loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None, generate_script, topic, duration, num_sections
-        )
+        try:
+            loop = asyncio.get_event_loop()
+            return await loop.run_in_executor(
+                None, generate_script, topic, duration, num_sections
+            )
+        except Exception as exc:
+            raise HTTPException(500, f"Gemini 오류: {exc}")
     return generate_template(topic, duration, num_sections)
 
 
