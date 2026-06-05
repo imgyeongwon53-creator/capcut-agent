@@ -42,7 +42,6 @@
   .header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
   .header p { color: var(--muted); margin-top: 6px; font-size: 13px; }
 
-  /* Card */
   .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -50,7 +49,6 @@
     padding: 20px;
   }
 
-  /* Dropzone */
   #dropzone {
     border: 1.5px dashed var(--border);
     border-radius: var(--radius);
@@ -69,7 +67,6 @@
   .drop-text { color: var(--muted); font-size: 13px; }
   .drop-text span { color: var(--accent); }
 
-  /* Video preview */
   #preview {
     width: 100%;
     max-height: 300px;
@@ -78,7 +75,6 @@
     border-radius: var(--radius);
   }
 
-  /* Upload progress bar */
   .upload-bar-wrap {
     height: 3px;
     background: var(--border);
@@ -94,7 +90,6 @@
   }
   .upload-label { color: var(--muted); font-size: 12px; margin-top: 6px; }
 
-  /* File info row */
   .file-info {
     display: flex;
     align-items: center;
@@ -105,7 +100,6 @@
   .file-info .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .file-info .size { color: var(--muted); white-space: nowrap; }
 
-  /* Buttons */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -120,11 +114,7 @@
     border: none;
     white-space: nowrap;
   }
-  .btn-primary {
-    background: var(--accent);
-    color: #0a0a0a;
-    width: 100%;
-  }
+  .btn-primary { background: var(--accent); color: #0a0a0a; width: 100%; }
   .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
   .btn-outline {
     background: transparent;
@@ -140,7 +130,6 @@
   }
   .btn-ghost:hover { color: var(--text); border-color: #444; }
 
-  /* Stage progress */
   .stages { display: flex; flex-direction: column; gap: 12px; }
   .stage-row {
     display: flex;
@@ -160,17 +149,13 @@
   .stage-row.active .stage-dot { background: var(--accent); animation: pulse 1s infinite; }
   .stage-row.done .stage-dot { background: var(--accent); }
   .stage-row.error .stage-dot { background: var(--error); }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .3; }
-  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
   .stage-name { flex: 1; font-size: 13px; }
   .stage-status { font-size: 12px; color: var(--muted); }
   .stage-row.active .stage-status { color: var(--accent); }
   .stage-row.done .stage-status { color: var(--accent); }
   .stage-row.error .stage-status { color: var(--error); }
 
-  /* Spinner */
   .spinner {
     width: 14px; height: 14px;
     border: 2px solid var(--border);
@@ -181,7 +166,6 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Stats grid */
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -197,7 +181,6 @@
   .stat-value { font-size: 22px; font-weight: 600; color: var(--accent); }
   .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-  /* Transcript */
   .transcript-list {
     display: flex;
     flex-direction: column;
@@ -208,16 +191,10 @@
   }
   .transcript-list::-webkit-scrollbar { width: 4px; }
   .transcript-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .transcript-item {
-    display: flex;
-    gap: 10px;
-    font-size: 12px;
-    line-height: 1.5;
-  }
+  .transcript-item { display: flex; gap: 10px; font-size: 12px; line-height: 1.5; }
   .ts-time { color: var(--accent); white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .ts-text { color: var(--text); }
 
-  /* Cuts list */
   .cuts-list {
     display: flex;
     flex-wrap: wrap;
@@ -235,7 +212,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Section label */
   .section-label {
     font-size: 11px;
     font-weight: 600;
@@ -245,7 +221,6 @@
     margin-bottom: 10px;
   }
 
-  /* Error box */
   .error-box {
     background: rgba(239,68,68,.08);
     border: 1px solid rgba(239,68,68,.25);
@@ -257,10 +232,8 @@
     word-break: break-all;
   }
 
-  /* Divider */
   .divider { border: none; border-top: 1px solid var(--border); }
 
-  /* Footer */
   footer {
     margin-top: auto;
     padding: 24px;
@@ -275,159 +248,14 @@
   footer a:hover { color: var(--text); }
 
   .hidden { display: none !important; }
-
-  /* Tabs */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 4px;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  .tab-btn.active { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
-
-  /* Script editor */
-  .script-section-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .script-section-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .script-section-num {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #0a0a0a;
-    font-size: 11px;
-    font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .script-section-title {
-    flex: 1;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    font-size: 14px;
-    font-weight: 600;
-    padding: 2px 4px;
-    outline: none;
-  }
-  .script-duration {
-    font-size: 11px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .script-points {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .script-point-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .script-point-input {
-    flex: 1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text);
-    font-size: 12px;
-    padding: 5px 8px;
-    outline: none;
-  }
-  .script-point-input:focus { border-color: var(--accent); }
-  .script-point-del {
-    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px 4px;
-  }
-  .script-point-del:hover { color: var(--error); }
-  .btn-add-point {
-    background: none; border: 1px dashed var(--border); border-radius: 4px;
-    color: var(--muted); font-size: 11px; padding: 4px 8px; cursor: pointer;
-    margin-top: 2px; text-align: left;
-  }
-  .btn-add-point:hover { border-color: var(--accent); color: var(--accent); }
-  .script-textarea {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text);
-    font-size: 12px;
-    padding: 8px;
-    resize: vertical;
-    min-height: 70px;
-    outline: none;
-    line-height: 1.6;
-    font-family: inherit;
-  }
-  .script-textarea:focus { border-color: var(--accent); }
-
-  /* Select / range */
-  select, input[type=range] {
-    background: var(--card);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 7px 10px;
-    font-size: 13px;
-    outline: none;
-    cursor: pointer;
-  }
-  select:focus { border-color: var(--accent); }
-  label { font-size: 12px; color: var(--muted); }
-  .form-row { display: flex; gap: 12px; align-items: flex-end; }
-  .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; }
-
-  .script-result-box {
-    background: rgba(34,197,94,.06);
-    border: 1px solid rgba(34,197,94,.2);
-    border-radius: var(--radius);
-    padding: 14px;
-    font-size: 13px;
-    text-align: center;
-  }
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <h1>CapCut Agent</h1>
-    <p>한국어 강의 영상 자동 편집 · 스크립트 → 드래프트 자동 생성</p>
+    <p>한국어 강의 영상 자동 편집</p>
   </div>
-
-  <!-- Tab switcher -->
-  <div class="tabs">
-    <button class="tab-btn active" id="tab-edit" onclick="switchTab('edit')">🎬 영상 편집</button>
-    <button class="tab-btn" id="tab-script" onclick="switchTab('script')">📝 스크립트 제작</button>
-  </div>
-
-  <!-- ===== 영상 편집 탭 ===== -->
-  <div id="tab-edit-content">
 
   <!-- Upload card -->
   <div class="card">
@@ -457,22 +285,22 @@
   <!-- Pipeline progress -->
   <div class="card hidden" id="pipeline-card">
     <div class="stages" id="stages">
-      <div class="stage-row" id="stage-silence" data-stage="silence">
+      <div class="stage-row" id="stage-silence">
         <div class="stage-dot"></div>
         <div class="stage-name">① 무음 구간 감지</div>
         <div class="stage-status">대기</div>
       </div>
-      <div class="stage-row" id="stage-asr" data-stage="asr">
+      <div class="stage-row" id="stage-asr">
         <div class="stage-dot"></div>
         <div class="stage-name">② 음성 인식 (STT)</div>
         <div class="stage-status">대기</div>
       </div>
-      <div class="stage-row" id="stage-filler" data-stage="filler">
+      <div class="stage-row" id="stage-filler">
         <div class="stage-dot"></div>
         <div class="stage-name">③ 필러/NG 감지</div>
         <div class="stage-status">대기</div>
       </div>
-      <div class="stage-row" id="stage-draft" data-stage="draft">
+      <div class="stage-row" id="stage-draft">
         <div class="stage-dot"></div>
         <div class="stage-name">④ CapCut 드래프트 생성</div>
         <div class="stage-status">대기</div>
@@ -523,68 +351,6 @@
     <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center" id="draft-name-label"></div>
   </div>
 
-  </div><!-- /tab-edit-content -->
-
-  <!-- ===== 스크립트 제작 탭 ===== -->
-  <div id="tab-script-content" class="hidden">
-
-    <!-- 입력 카드 -->
-    <div class="card" id="script-input-card">
-      <div id="ai-badge" class="hidden" style="margin-bottom:14px;display:flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--radius);font-size:12px;color:var(--accent)">
-        ✨ Gemini AI 연결됨
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <input type="text" id="script-topic"
-          placeholder="영상 주제를 입력하세요  예) 중국어 성조 완벽 이해"
-          style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:15px;padding:12px 14px;outline:none;width:100%"
-          onkeydown="if(event.key==='Enter') document.getElementById('make-video-btn').click()">
-        <div class="form-group">
-          <label>영상 길이</label>
-          <select id="script-duration" style="width:100%">
-            <option value="0.25" selected>15초</option>
-            <option value="0.5">30초</option>
-            <option value="1">1분</option>
-            <option value="3">3분</option>
-            <option value="5">5분</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" id="make-video-btn">영상 만들기</button>
-      </div>
-    </div>
-
-    <!-- 진행 상황 -->
-    <div id="script-progress" class="hidden">
-      <div class="card" style="display:flex;flex-direction:column;gap:14px">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div class="spinner"></div>
-          <span style="font-size:13px;color:var(--muted)" id="script-progress-msg">스크립트 생성 중…</span>
-        </div>
-        <div class="upload-bar-wrap"><div class="upload-bar" id="script-bar" style="transition:width 0.5s"></div></div>
-      </div>
-    </div>
-
-    <!-- 완료 -->
-    <div id="script-result" class="hidden">
-      <div class="card">
-        <div class="script-result-box">
-          <div style="font-size:28px;margin-bottom:8px">✅</div>
-          <div style="font-weight:600;font-size:15px;margin-bottom:4px">CapCut 드래프트 생성 완료</div>
-          <div style="color:var(--muted);font-size:12px;margin-bottom:16px" id="script-draft-name"></div>
-          <div style="display:flex;gap:10px">
-            <button class="btn btn-outline" id="script-open-capcut-btn">CapCut에서 열기</button>
-            <button class="btn btn-ghost" id="script-new-btn" style="width:auto;padding:10px 16px">다시 만들기</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 오류 -->
-    <div id="script-error" class="hidden">
-      <div class="error-box" id="script-error-msg"></div>
-    </div>
-
-  </div><!-- /tab-script-content -->
-
 </div>
 
 <footer>
@@ -596,29 +362,28 @@
 </footer>
 
 <script>
-// TRAP 3: handle file:// protocol where window.location.origin === "null"
 const API = (window.location.origin && window.location.origin !== 'null')
   ? window.location.origin
   : 'http://localhost:8000';
 
-const fileInput     = document.getElementById('file-input');
-const dropzone      = document.getElementById('dropzone');
+const fileInput      = document.getElementById('file-input');
+const dropzone       = document.getElementById('dropzone');
 const dropPlaceholder = document.getElementById('drop-placeholder');
-const preview       = document.getElementById('preview');
+const preview        = document.getElementById('preview');
 const uploadProgress = document.getElementById('upload-progress');
-const uploadBar     = document.getElementById('upload-bar');
-const uploadLabel   = document.getElementById('upload-label');
-const fileInfoRow   = document.getElementById('file-info-row');
-const fileName      = document.getElementById('file-name');
-const fileSize      = document.getElementById('file-size');
-const startBtn      = document.getElementById('start-btn');
-const resetBtn      = document.getElementById('reset-btn');
-const pipelineCard  = document.getElementById('pipeline-card');
-const errorCard     = document.getElementById('error-card');
-const errorMsg      = document.getElementById('error-msg');
-const resultCard    = document.getElementById('result-card');
-const openCapcutBtn = document.getElementById('open-capcut-btn');
-const newVideoBtn   = document.getElementById('new-video-btn');
+const uploadBar      = document.getElementById('upload-bar');
+const uploadLabel    = document.getElementById('upload-label');
+const fileInfoRow    = document.getElementById('file-info-row');
+const fileName       = document.getElementById('file-name');
+const fileSize       = document.getElementById('file-size');
+const startBtn       = document.getElementById('start-btn');
+const resetBtn       = document.getElementById('reset-btn');
+const pipelineCard   = document.getElementById('pipeline-card');
+const errorCard      = document.getElementById('error-card');
+const errorMsg       = document.getElementById('error-msg');
+const resultCard     = document.getElementById('result-card');
+const openCapcutBtn  = document.getElementById('open-capcut-btn');
+const newVideoBtn    = document.getElementById('new-video-btn');
 const draftNameLabel = document.getElementById('draft-name-label');
 
 let currentFileId = null;
@@ -634,7 +399,6 @@ function fmtDuration(secs) {
   return `${m}:${String(s).padStart(2,'0')}`;
 }
 
-// Drag & drop
 dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
 dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
 dropzone.addEventListener('drop', e => {
@@ -650,19 +414,13 @@ function handleFile(file) {
     alert('MP4 또는 MOV 파일만 업로드할 수 있습니다.');
     return;
   }
-
-  // Show preview
   dropPlaceholder.classList.add('hidden');
   preview.classList.remove('hidden');
   preview.src = URL.createObjectURL(file);
   dropzone.classList.add('has-file');
-
-  // Show file info
   fileName.textContent = file.name;
   fileSize.textContent = fmtSize(file.size);
   fileInfoRow.classList.remove('hidden');
-
-  // Upload
   uploadProgress.classList.remove('hidden');
   uploadFile(file);
 }
@@ -701,7 +459,6 @@ function uploadFile(file) {
   xhr.send(fd);
 }
 
-// Start processing
 startBtn.addEventListener('click', () => {
   if (!currentFileId) return;
   startBtn.disabled = true;
@@ -721,19 +478,11 @@ function resetStages() {
   });
 }
 
-const STAGE_LABELS = {
-  silence: '① 무음 구간 감지',
-  asr:     '② 음성 인식 (STT)',
-  filler:  '③ 필러/NG 감지',
-  draft:   '④ CapCut 드래프트 생성',
-};
-
 function setStage(stage, status, info = '') {
   const row = document.getElementById(`stage-${stage}`);
   if (!row) return;
   const statusEl = row.querySelector('.stage-status');
   const existingSpinner = row.querySelector('.spinner');
-
   row.classList.remove('active', 'done', 'error');
 
   if (status === 'start') {
@@ -796,11 +545,10 @@ function runPipeline(fileId) {
 }
 
 function showResults(data) {
-  document.getElementById('stat-original').textContent = fmtDuration(data.original_duration);
-  document.getElementById('stat-edited').textContent   = fmtDuration(data.edited_duration);
+  document.getElementById('stat-original').textContent  = fmtDuration(data.original_duration);
+  document.getElementById('stat-edited').textContent    = fmtDuration(data.edited_duration);
   document.getElementById('stat-reduction').textContent = data.reduction_percent + '%';
 
-  // Cuts
   const cutsList = document.getElementById('cuts-list');
   const cutsSection = document.getElementById('cuts-section');
   cutsList.innerHTML = '';
@@ -817,7 +565,6 @@ function showResults(data) {
     cutsSection.classList.add('hidden');
   }
 
-  // Transcript
   const transcriptList = document.getElementById('transcript-list');
   transcriptList.innerHTML = '';
   if (data.transcript) {
@@ -835,15 +582,15 @@ function showResults(data) {
 
 function fmtTs(secs) {
   const m = Math.floor(secs / 60);
-  const s = (secs % 60).toFixed(1);
-  return `${m}:${String(Math.floor(secs % 60)).padStart(2,'0')}.${String(Math.round((secs % 1) * 10)).padStart(1,'0')}`;
+  const s = Math.floor(secs % 60);
+  const ms = Math.round((secs % 1) * 10);
+  return `${m}:${String(s).padStart(2,'0')}.${ms}`;
 }
 
 function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// Open CapCut
 openCapcutBtn.addEventListener('click', () => {
   fetch(`${API}/open-capcut`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' })
     .then(r => r.json())
@@ -851,115 +598,6 @@ openCapcutBtn.addEventListener('click', () => {
     .catch(() => alert('서버 연결 오류'));
 });
 
-// ===== Tab switching =====
-function switchTab(tab) {
-  document.getElementById('tab-edit-content').classList.toggle('hidden', tab !== 'edit');
-  document.getElementById('tab-script-content').classList.toggle('hidden', tab !== 'script');
-  document.getElementById('tab-edit').classList.toggle('active', tab === 'edit');
-  document.getElementById('tab-script').classList.toggle('active', tab === 'script');
-}
-
-// ===== Script creation =====
-let currentScript = null;
-
-// Check Gemini availability on page load
-fetch(`${API}/script/capabilities`).then(r => r.json()).then(d => {
-  if (d.gemini) {
-    const badge = document.getElementById('ai-badge');
-    badge.classList.remove('hidden');
-    badge.style.display = 'flex';
-  }
-}).catch(() => {});
-
-async function sseStream(url, body, onMsg) {
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(body),
-  });
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  let buf = '';
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += decoder.decode(value, { stream: true });
-    const lines = buf.split('\n');
-    buf = lines.pop();
-    for (const line of lines) {
-      if (!line.startsWith('data:')) continue;
-      onMsg(JSON.parse(line.slice(5).trim()));
-    }
-  }
-}
-
-document.getElementById('make-video-btn').addEventListener('click', async () => {
-  const topic = document.getElementById('script-topic').value.trim();
-  if (!topic) { alert('주제를 입력해주세요.'); return; }
-  const duration = parseFloat(document.getElementById('script-duration').value);
-
-  const btn = document.getElementById('make-video-btn');
-  btn.disabled = true;
-
-  document.getElementById('script-progress').classList.remove('hidden');
-  document.getElementById('script-result').classList.add('hidden');
-  document.getElementById('script-error').classList.add('hidden');
-  document.getElementById('script-progress-msg').textContent = '스크립트 생성 중…';
-  document.getElementById('script-bar').style.width = '30%';
-
-  try {
-    // Step 1: 스크립트 생성
-    const resp = await fetch(`${API}/script/template`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ topic, duration_minutes: duration, num_sections: 3 }),
-    });
-    const script = await resp.json();
-    if (!resp.ok) throw new Error(script.detail || JSON.stringify(script));
-
-    // Step 2: CapCut 드래프트 생성
-    document.getElementById('script-progress-msg').textContent = 'CapCut 드래프트 생성 중…';
-    document.getElementById('script-bar').style.width = '60%';
-
-    let draftName = '';
-    await sseStream(`${API}/script/draft`, script, (data) => {
-      if (data.status === 'start') {
-        document.getElementById('script-progress-msg').textContent = data.message;
-      } else if (data.status === 'done') {
-        draftName = data.draft_name;
-        document.getElementById('script-bar').style.width = '100%';
-      } else if (data.status === 'error') {
-        throw new Error(data.message);
-      }
-    });
-
-    document.getElementById('script-progress').classList.add('hidden');
-    document.getElementById('script-draft-name').textContent = `드래프트: ${draftName}`;
-    document.getElementById('script-result').classList.remove('hidden');
-
-  } catch(e) {
-    document.getElementById('script-progress').classList.add('hidden');
-    document.getElementById('script-error-msg').textContent = '오류: ' + e.message;
-    document.getElementById('script-error').classList.remove('hidden');
-  } finally {
-    btn.disabled = false;
-    document.getElementById('script-bar').style.width = '0%';
-  }
-});
-
-document.getElementById('script-open-capcut-btn').addEventListener('click', () => {
-  fetch(`${API}/open-capcut`, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
-    .catch(() => alert('서버 연결 오류'));
-});
-
-document.getElementById('script-new-btn').addEventListener('click', () => {
-  document.getElementById('script-result').classList.add('hidden');
-  document.getElementById('script-error').classList.add('hidden');
-  document.getElementById('script-topic').value = '';
-  document.getElementById('script-topic').focus();
-});
-
-// ===== Reset / New video =====
 function doReset() {
   currentFileId = null;
   fileInput.value = '';
