@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import uuid
@@ -17,6 +18,8 @@ from core.silence import compute_keep_segments, detect_silence, get_duration
 from core.asr import transcribe
 from core.filler import compute_final_keeps
 from core.draft_builder import build_draft
+from core.script_template import generate_template
+from core.text_draft_builder import build_script_draft
 
 app = FastAPI(title="CapCut Agent")
 
@@ -144,6 +147,39 @@ async def config():
         "draft_folder": str(CAPCUT_DRAFT_FOLDER),
         "exists": CAPCUT_DRAFT_FOLDER.exists(),
     }
+
+
+@app.post("/script/template")
+async def script_template(request: Request):
+    body = await request.json()
+    topic = body.get("topic", "").strip()
+    if not topic:
+        raise HTTPException(400, "주제를 입력해주세요.")
+    duration = max(1, min(30, int(body.get("duration_minutes", 5))))
+    num_sections = max(3, min(5, int(body.get("num_sections", 3))))
+    return generate_template(topic, duration, num_sections)
+
+
+@app.post("/script/draft")
+async def script_draft(request: Request):
+    script = await request.json()
+    stem = re.sub(r"[^\w가-힣]", "_", script.get("title", "script"))[:20]
+
+    async def stream():
+        def sse(status: str, **kwargs) -> str:
+            return f"data: {json.dumps({'status': status, **kwargs}, ensure_ascii=False)}\n\n"
+        try:
+            yield sse("start", message="배경 영상 및 드래프트 생성 중…")
+            draft_name = await build_script_draft(script, stem)
+            yield sse("done", draft_name=draft_name)
+        except Exception as exc:
+            yield sse("error", message=str(exc))
+
+    return StreamingResponse(
+        stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.post("/open-capcut")
