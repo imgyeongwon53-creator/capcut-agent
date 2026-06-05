@@ -12,7 +12,7 @@ def _get_client():
     if not api_key:
         raise ValueError("GOOGLE_API_KEY 환경변수가 설정되지 않았습니다.")
     genai.configure(api_key=api_key)
-    return genai.GenerativeModel("gemini-1.5-flash")
+    return genai.GenerativeModel("gemini-2.0-flash")
 
 
 def generate_script(topic: str, duration_minutes: float = 5, num_sections: int = 3) -> Dict[str, Any]:
