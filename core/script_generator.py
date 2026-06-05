@@ -4,19 +4,18 @@ import re
 import uuid
 from typing import Any, Dict
 
-import google.generativeai as genai  # type: ignore
+from google import genai  # type: ignore
 
 
-def _get_client():
+def _get_client() -> genai.Client:
     api_key = os.environ.get("GOOGLE_API_KEY", "")
     if not api_key:
         raise ValueError("GOOGLE_API_KEY 환경변수가 설정되지 않았습니다.")
-    genai.configure(api_key=api_key)
-    return genai.GenerativeModel("gemini-2.0-flash")
+    return genai.Client(api_key=api_key)
 
 
 def generate_script(topic: str, duration_minutes: float = 5, num_sections: int = 3) -> Dict[str, Any]:
-    model = _get_client()
+    client = _get_client()
     total_seconds = int(duration_minutes * 60)
 
     prompt = f"""다음 주제로 {total_seconds}초 분량의 한국어 교육 영상 스크립트를 작성해주세요.
@@ -44,17 +43,17 @@ def generate_script(topic: str, duration_minutes: float = 5, num_sections: int =
 - key_points는 2-3개로 간결하게
 - 섹션은 도입 → 본론 → 마무리 구조로"""
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=prompt,
+    )
     raw = response.text.strip()
 
-    # JSON 추출
     json_match = re.search(r'\{[\s\S]*\}', raw)
     if not json_match:
-        raise ValueError("Gemini 응답에서 JSON을 찾을 수 없습니다.")
+        raise ValueError(f"Gemini 응답에서 JSON을 찾을 수 없습니다: {raw[:200]}")
 
     data = json.loads(json_match.group())
-
-    # ID 및 total_duration 보정
     data["id"] = str(uuid.uuid4())
     data["topic"] = topic
     data["total_duration"] = total_seconds
