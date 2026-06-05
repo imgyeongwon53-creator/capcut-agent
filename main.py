@@ -174,7 +174,8 @@ async def script_template(request: Request):
                 None, generate_script, topic, duration, num_sections
             )
         except Exception as exc:
-            raise HTTPException(500, f"Gemini 오류: {exc}")
+            # Gemini 실패 시 템플릿으로 자동 폴백
+            pass
     return generate_template(topic, duration, num_sections)
 
 

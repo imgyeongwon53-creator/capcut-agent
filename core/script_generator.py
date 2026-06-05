@@ -43,10 +43,16 @@ def generate_script(topic: str, duration_minutes: float = 5, num_sections: int =
 - key_points는 2-3개로 간결하게
 - 섹션은 도입 → 본론 → 마무리 구조로"""
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
-    )
+    # 모델 우선순위: flash-lite → flash → 1.5-flash
+    last_exc = None
+    for model in ("gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"):
+        try:
+            response = client.models.generate_content(model=model, contents=prompt)
+            break
+        except Exception as e:
+            last_exc = e
+    else:
+        raise last_exc
     raw = response.text.strip()
 
     json_match = re.search(r'\{[\s\S]*\}', raw)
