@@ -43,18 +43,13 @@ def _build_draft_sync(
     segments: List[Dict[str, Any]],
     stem: str,
 ) -> str:
-    from pycapcut import Draft, VideoMaterial, VideoSegment, TextSegment, TextStyle, trange, SEC  # type: ignore
+    from pycapcut import DraftFolder, VideoMaterial, VideoSegment, TextSegment, TextStyle, trange, SEC  # type: ignore
 
     # TRAP 6: unique name to avoid WinError 32 when CapCut has draft folder open
     draft_name = f"auto_{stem}_{datetime.now().strftime('%H%M%S')}"
 
-    draft = Draft(
-        draft_name,
-        width=DRAFT_WIDTH,
-        height=DRAFT_HEIGHT,
-        fps=DRAFT_FPS,
-        draft_folder=str(CAPCUT_DRAFT_FOLDER),
-    )
+    folder = DraftFolder(str(CAPCUT_DRAFT_FOLDER))
+    draft = folder.create_draft(draft_name, width=DRAFT_WIDTH, height=DRAFT_HEIGHT, fps=DRAFT_FPS)
 
     mat = VideoMaterial(video_path)
     mat_duration = mat.duration  # microseconds
