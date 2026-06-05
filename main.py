@@ -21,6 +21,9 @@ from core.draft_builder import build_draft
 from core.script_template import generate_template
 from core.text_draft_builder import build_script_draft
 
+def _has_gemini() -> bool:
+    return bool(os.environ.get("GOOGLE_API_KEY", ""))
+
 app = FastAPI(title="CapCut Agent")
 
 # TRAP 3: CORS for file:// protocol access
@@ -149,6 +152,11 @@ async def config():
     }
 
 
+@app.get("/script/capabilities")
+async def script_capabilities():
+    return {"gemini": _has_gemini()}
+
+
 @app.post("/script/template")
 async def script_template(request: Request):
     body = await request.json()
@@ -157,6 +165,13 @@ async def script_template(request: Request):
         raise HTTPException(400, "주제를 입력해주세요.")
     duration = max(0.25, min(30, float(body.get("duration_minutes", 5))))
     num_sections = max(3, min(5, int(body.get("num_sections", 3))))
+
+    if _has_gemini():
+        from core.script_generator import generate_script
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None, generate_script, topic, duration, num_sections
+        )
     return generate_template(topic, duration, num_sections)
 
 
