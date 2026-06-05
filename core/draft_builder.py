@@ -83,25 +83,34 @@ def _build_draft_sync(
         time_map.append((seg_start, seg_end, tl_cursor))
         tl_cursor += duration_s
 
-    # Sentence-level subtitles (one per segment, not word-level)
+    # Sentence-level subtitles — map to timeline, sort, trim overlaps
+    sub_entries: List[Tuple[float, float, str]] = []
     for seg in segments:
         tl_start, tl_end = _find_timeline_range(seg["start"], seg["end"], time_map)
         if tl_start is None or tl_end is None or tl_end <= tl_start:
             continue
+        text = seg["text"].strip()
+        if text:
+            sub_entries.append((tl_start, tl_end, text))
 
-        # pyCapCut rule 3: color is float 0.0-1.0, not 0-255
-        style = TextStyle(
-            color=(1.0, 1.0, 1.0),
-            bold=True,
-        )
-        text_seg = TextSegment(
-            seg["text"],
+    sub_entries.sort(key=lambda x: x[0])
+
+    prev_end = 0.0
+    style = TextStyle(color=(1.0, 1.0, 1.0), bold=True)
+    border = TextBorder()
+    for tl_start, tl_end, text in sub_entries:
+        # Clamp start so it never overlaps with the previous subtitle
+        tl_start = max(tl_start, prev_end)
+        if tl_end - tl_start < 0.1:
+            continue
+        draft.add_segment(TextSegment(
+            text,
             trange(int(tl_start * SEC), int((tl_end - tl_start) * SEC)),
             style=style,
-            border=TextBorder(),
+            border=border,
             clip_settings=ClipSettings(transform_y=-0.8),
-        )
-        draft.add_segment(text_seg)
+        ))
+        prev_end = tl_end
 
     draft.save()
     return draft_name
