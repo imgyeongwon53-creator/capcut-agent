@@ -155,7 +155,7 @@ async def script_template(request: Request):
     topic = body.get("topic", "").strip()
     if not topic:
         raise HTTPException(400, "주제를 입력해주세요.")
-    duration = max(1, min(30, int(body.get("duration_minutes", 5))))
+    duration = max(0.25, min(30, float(body.get("duration_minutes", 5))))
     num_sections = max(3, min(5, int(body.get("num_sections", 3))))
     return generate_template(topic, duration, num_sections)
 

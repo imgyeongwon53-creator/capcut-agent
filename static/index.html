@@ -541,6 +541,8 @@
           <div class="form-group">
             <label>영상 길이</label>
             <select id="script-duration">
+              <option value="0.25">15초</option>
+              <option value="0.5">30초</option>
               <option value="1">1분</option>
               <option value="3">3분</option>
               <option value="5" selected>5분</option>
@@ -890,7 +892,7 @@ let currentScript = null;
 document.getElementById('gen-template-btn').addEventListener('click', async () => {
   const topic = document.getElementById('script-topic').value.trim();
   if (!topic) { alert('주제를 입력해주세요.'); return; }
-  const duration = parseInt(document.getElementById('script-duration').value);
+  const duration = parseFloat(document.getElementById('script-duration').value);
   const sections = parseInt(document.getElementById('script-sections').value);
 
   const btn = document.getElementById('gen-template-btn');
@@ -918,8 +920,9 @@ document.getElementById('gen-template-btn').addEventListener('click', async () =
 
 function renderScriptEditor(script) {
   document.getElementById('script-title-input').value = script.title;
-  const totalMin = Math.round(script.total_duration / 60);
-  document.getElementById('script-total-time').textContent = `총 ${totalMin}분`;
+  const totalSec = script.total_duration;
+  const timeLabel = totalSec < 60 ? `총 ${totalSec}초` : `총 ${Math.round(totalSec / 60)}분`;
+  document.getElementById('script-total-time').textContent = timeLabel;
 
   const container = document.getElementById('sections-editor');
   container.innerHTML = '';

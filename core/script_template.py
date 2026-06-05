@@ -23,7 +23,7 @@ _TEMPLATES = {
 }
 
 
-def generate_template(topic: str, duration_minutes: int = 5, num_sections: int = 3) -> Dict[str, Any]:
+def generate_template(topic: str, duration_minutes: float = 5, num_sections: int = 3) -> Dict[str, Any]:
     total_seconds = duration_minutes * 60
     templates = _TEMPLATES.get(num_sections, _TEMPLATES[3])
 
