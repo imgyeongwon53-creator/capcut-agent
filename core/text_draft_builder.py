@@ -57,6 +57,7 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
     from pycapcut import DraftFolder, VideoMaterial, VideoSegment, TextSegment, TextStyle, trange, SEC  # type: ignore
     from pycapcut.segment import ClipSettings  # type: ignore
     from pycapcut.text_segment import TextBorder  # type: ignore
+    from pycapcut.track import TrackType  # type: ignore
 
     total_duration = float(script.get("total_duration", 300))
     sections = script.get("sections", [])
@@ -69,6 +70,10 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
     draft_name = f"script_{stem}_{datetime.now().strftime('%H%M%S')}"
     folder = DraftFolder(str(CAPCUT_DRAFT_FOLDER))
     draft = folder.create_draft(draft_name, width=DRAFT_WIDTH, height=DRAFT_HEIGHT, fps=DRAFT_FPS)
+    draft.add_track(TrackType.video)
+    draft.add_track(TrackType.text, "heading")
+    draft.add_track(TrackType.text, "keypoints")
+    draft.add_track(TrackType.text, "subtitles")
 
     mat = VideoMaterial(bg_path)
     mat_duration = mat.duration
@@ -91,7 +96,7 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
         trange(0, int(title_dur_s * SEC)),
         style=white_bold,
         border=black_border,
-    ))
+    ), track_name="heading")
 
     cursor = title_dur_s
 
@@ -112,7 +117,7 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
             style=green_bold,
             border=black_border,
             clip_settings=ClipSettings(transform_y=0.7),
-        ))
+        ), track_name="heading")
 
         # ── Key points: center, evenly spread
         if key_points:
@@ -124,7 +129,7 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
                     trange(int(pt_start * SEC), int(pt_dur * SEC)),
                     style=TextStyle(color=(0.9, 0.9, 0.9)),
                     border=black_border,
-                ))
+                ), track_name="keypoints")
 
         # ── 한글 자막: script text split into lines, bottom
         lines = _split_subtitle_lines(script_text)
@@ -138,7 +143,7 @@ def _build_script_draft_sync(script: Dict[str, Any], stem: str) -> str:
                     style=white_sub,
                     border=black_border,
                     clip_settings=ClipSettings(transform_y=-0.8),
-                ))
+                ), track_name="subtitles")
 
         cursor += duration
 

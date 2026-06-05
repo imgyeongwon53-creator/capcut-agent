@@ -46,12 +46,15 @@ def _build_draft_sync(
     from pycapcut import DraftFolder, VideoMaterial, VideoSegment, TextSegment, TextStyle, trange, SEC  # type: ignore
     from pycapcut.segment import ClipSettings  # type: ignore
     from pycapcut.text_segment import TextBorder  # type: ignore
+    from pycapcut.track import TrackType  # type: ignore
 
     # TRAP 6: unique name to avoid WinError 32 when CapCut has draft folder open
     draft_name = f"auto_{stem}_{datetime.now().strftime('%H%M%S')}"
 
     folder = DraftFolder(str(CAPCUT_DRAFT_FOLDER))
     draft = folder.create_draft(draft_name, width=DRAFT_WIDTH, height=DRAFT_HEIGHT, fps=DRAFT_FPS)
+    draft.add_track(TrackType.video)
+    draft.add_track(TrackType.text)
 
     mat = VideoMaterial(video_path)
     mat_duration = mat.duration  # microseconds
