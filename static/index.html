@@ -334,7 +334,7 @@
   <div class="card" style="padding:0;overflow:hidden">
     <div class="tabs">
       <button class="tab-btn active" data-tab="edit">🎬 영상 편집</button>
-      <button class="tab-btn" data-tab="script">✍️ 스크립트 생성</button>
+      <button class="tab-btn" data-tab="script">🤖 영상 자동 생성</button>
     </div>
 
     <!-- Edit tab -->
@@ -436,55 +436,81 @@
 
     </div><!-- /tab-edit -->
 
-    <!-- Script tab -->
+    <!-- Auto video tab -->
     <div class="tab-panel" id="tab-script" style="padding:20px">
 
-      <div id="script-api-warning" class="api-warning hidden">
-        ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다. 서버에서 키를 설정해주세요.
+      <div id="av-api-warning" class="api-warning hidden">
+        ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다. 서버를 재시작하고 키를 설정해주세요.
       </div>
 
-      <div class="form-group">
-        <label class="form-label" for="script-topic">주제 / 강의 제목</label>
-        <input type="text" id="script-topic" class="form-input" placeholder="예: 파이썬 기초 - 리스트와 딕셔너리">
-      </div>
-
-      <div class="form-row">
+      <!-- Input form -->
+      <div id="av-form">
         <div class="form-group">
-          <label class="form-label" for="script-duration">영상 길이 (분)</label>
-          <select id="script-duration" class="form-input">
-            <option value="3">3분</option>
-            <option value="5" selected>5분</option>
-            <option value="10">10분</option>
-            <option value="15">15분</option>
-          </select>
+          <label class="form-label" for="av-topic">주제 / 강의 제목</label>
+          <input type="text" id="av-topic" class="form-input" placeholder="예: 파이썬 기초 - 리스트와 딕셔너리">
         </div>
-        <div class="form-group">
-          <label class="form-label" for="script-sections">섹션 수</label>
-          <select id="script-sections" class="form-input">
-            <option value="3" selected>3개 (도입·본론·마무리)</option>
-            <option value="4">4개</option>
-            <option value="5">5개</option>
-          </select>
+        <div class="form-row" style="margin-top:12px">
+          <div class="form-group">
+            <label class="form-label" for="av-duration">영상 길이 (분)</label>
+            <select id="av-duration" class="form-input">
+              <option value="1">1분</option>
+              <option value="3" selected>3분</option>
+              <option value="5">5분</option>
+              <option value="10">10분</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="av-sections">섹션 수</label>
+            <select id="av-sections" class="form-input">
+              <option value="3" selected>3개 (도입·본론·마무리)</option>
+              <option value="4">4개</option>
+              <option value="5">5개</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="av-start-btn" style="margin-top:16px">영상 자동 생성</button>
+      </div>
+
+      <!-- Pipeline progress -->
+      <div id="av-pipeline" class="hidden">
+        <div class="stages">
+          <div class="stage-row" id="av-stage-script">
+            <div class="stage-dot"></div>
+            <div class="stage-name">① Claude 스크립트 생성</div>
+            <div class="stage-status">대기</div>
+          </div>
+          <div class="stage-row" id="av-stage-tts">
+            <div class="stage-dot"></div>
+            <div class="stage-name">② 음성 합성 (TTS)</div>
+            <div class="stage-status">대기</div>
+          </div>
+          <div class="stage-row" id="av-stage-audio">
+            <div class="stage-dot"></div>
+            <div class="stage-name">③ 음성 파일 합치기</div>
+            <div class="stage-status">대기</div>
+          </div>
+          <div class="stage-row" id="av-stage-render">
+            <div class="stage-dot"></div>
+            <div class="stage-name">④ 영상 렌더링</div>
+            <div class="stage-status">대기</div>
+          </div>
         </div>
       </div>
 
-      <button class="btn btn-primary" id="script-generate-btn">AI 스크립트 생성</button>
+      <!-- Error -->
+      <div class="hidden" id="av-error-card">
+        <div class="error-box" id="av-error-msg"></div>
+      </div>
 
-      <!-- Script result -->
-      <div id="script-result" class="hidden">
-        <div class="section-label" id="script-title-label"></div>
-        <div id="script-sections-list" style="display:flex;flex-direction:column;gap:10px"></div>
-        <hr class="divider" style="margin:4px 0">
+      <!-- Result -->
+      <div id="av-result" class="hidden">
+        <div class="section-label" id="av-result-title"></div>
+        <div id="av-script-sections" style="display:flex;flex-direction:column;gap:10px"></div>
+        <hr class="divider" style="margin:16px 0">
         <div style="display:flex;gap:10px">
-          <button class="btn btn-outline" id="script-draft-btn">CapCut 드래프트 생성</button>
-          <button class="btn btn-ghost" id="script-reset-btn" style="width:auto;padding:10px 16px">초기화</button>
+          <a class="btn btn-primary" id="av-download-btn" style="text-decoration:none" download>영상 다운로드 (.mp4)</a>
+          <button class="btn btn-ghost" id="av-reset-btn" style="width:auto;padding:10px 16px">초기화</button>
         </div>
-        <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center" id="script-draft-label"></div>
-      </div>
-
-      <!-- Script error -->
-      <div class="hidden" id="script-error-card">
-        <div class="error-box" id="script-error-msg"></div>
       </div>
 
     </div><!-- /tab-script -->
@@ -774,59 +800,130 @@ fetch(`${API}/script/capabilities`)
   .then(r => r.json())
   .then(d => {
     if (!d.claude) {
-      document.getElementById('script-api-warning').classList.remove('hidden');
-      document.getElementById('script-generate-btn').disabled = true;
+      document.getElementById('av-api-warning').classList.remove('hidden');
+      document.getElementById('av-start-btn').disabled = true;
     }
   })
   .catch(() => {});
 
-// ── Script generation ────────────────────────────────────────────────────────
-const scriptGenerateBtn = document.getElementById('script-generate-btn');
-const scriptResult      = document.getElementById('script-result');
-const scriptErrorCard   = document.getElementById('script-error-card');
-const scriptErrorMsg    = document.getElementById('script-error-msg');
-const scriptDraftBtn    = document.getElementById('script-draft-btn');
-const scriptResetBtn    = document.getElementById('script-reset-btn');
-const scriptDraftLabel  = document.getElementById('script-draft-label');
+// ── Auto video generation ────────────────────────────────────────────────────
+const avStartBtn   = document.getElementById('av-start-btn');
+const avPipeline   = document.getElementById('av-pipeline');
+const avErrorCard  = document.getElementById('av-error-card');
+const avErrorMsg   = document.getElementById('av-error-msg');
+const avResult     = document.getElementById('av-result');
+const avDownload   = document.getElementById('av-download-btn');
+const avResetBtn   = document.getElementById('av-reset-btn');
 
-let currentScript = null;
+function avSetStage(stageId, status, info = '') {
+  const row = document.getElementById(`av-stage-${stageId}`);
+  if (!row) return;
+  const statusEl = row.querySelector('.stage-status');
+  const spinner  = row.querySelector('.spinner');
+  row.classList.remove('active', 'done', 'error');
+  if (status === 'start') {
+    row.classList.add('active');
+    statusEl.textContent = '처리 중…';
+    if (!spinner) { const sp = document.createElement('div'); sp.className='spinner'; row.appendChild(sp); }
+  } else if (status === 'done') {
+    row.classList.add('done');
+    statusEl.textContent = info || '완료';
+    if (spinner) spinner.remove();
+  } else if (status === 'error') {
+    row.classList.add('error');
+    statusEl.textContent = '오류';
+    if (spinner) spinner.remove();
+  }
+}
 
-scriptGenerateBtn.addEventListener('click', async () => {
-  const topic = document.getElementById('script-topic').value.trim();
+function avResetStages() {
+  ['script','tts','audio','render'].forEach(s => {
+    const row = document.getElementById(`av-stage-${s}`);
+    if (!row) return;
+    row.classList.remove('active','done','error');
+    row.querySelector('.stage-status').textContent = '대기';
+    const sp = row.querySelector('.spinner');
+    if (sp) sp.remove();
+  });
+}
+
+avStartBtn.addEventListener('click', async () => {
+  const topic = document.getElementById('av-topic').value.trim();
   if (!topic) { alert('주제를 입력해주세요.'); return; }
-  const duration_minutes = parseFloat(document.getElementById('script-duration').value);
-  const num_sections     = parseInt(document.getElementById('script-sections').value, 10);
+  const duration_minutes = parseFloat(document.getElementById('av-duration').value);
+  const num_sections     = parseInt(document.getElementById('av-sections').value, 10);
 
-  scriptGenerateBtn.disabled = true;
-  scriptGenerateBtn.textContent = '생성 중…';
-  scriptResult.classList.add('hidden');
-  scriptErrorCard.classList.add('hidden');
+  avStartBtn.disabled = true;
+  avPipeline.classList.remove('hidden');
+  avErrorCard.classList.add('hidden');
+  avResult.classList.add('hidden');
+  avResetStages();
 
+  // Step 1: create job
+  let job_id;
   try {
-    const resp = await fetch(`${API}/script/generate`, {
+    const r = await fetch(`${API}/autovideo/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ topic, duration_minutes, num_sections }),
     });
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-      throw new Error(err.detail || resp.statusText);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: r.statusText }));
+      throw new Error(err.detail || r.statusText);
     }
-    currentScript = await resp.json();
-    renderScript(currentScript);
-    scriptResult.classList.remove('hidden');
+    ({ job_id } = await r.json());
   } catch (e) {
-    scriptErrorMsg.textContent = e.message;
-    scriptErrorCard.classList.remove('hidden');
-  } finally {
-    scriptGenerateBtn.disabled = false;
-    scriptGenerateBtn.textContent = 'AI 스크립트 생성';
+    avErrorMsg.textContent = e.message;
+    avErrorCard.classList.remove('hidden');
+    avStartBtn.disabled = false;
+    return;
   }
+
+  // Step 2: stream progress
+  const es = new EventSource(`${API}/autovideo/stream/${job_id}`);
+  es.onmessage = e => {
+    const data = JSON.parse(e.data);
+    const { stage, status } = data;
+
+    if (stage === 'error') {
+      avErrorMsg.textContent = data.message || '알 수 없는 오류';
+      avErrorCard.classList.remove('hidden');
+      es.close();
+      avStartBtn.disabled = false;
+      return;
+    }
+
+    const stageMap = { script: 'script', tts: 'tts', audio: 'audio', render: 'render' };
+    if (stageMap[stage]) {
+      let info = '';
+      if (stage === 'script' && status === 'done') info = `"${data.title}" (${data.sections}개 섹션)`;
+      if (stage === 'tts'    && status === 'done') info = `${data.count}개 섹션 완료`;
+      if (stage === 'audio'  && status === 'done') info = `총 ${data.duration}초`;
+      if (stage === 'render' && status === 'done') info = '완료';
+      avSetStage(stageMap[stage], status, info);
+    }
+
+    if (stage === 'done' && status === 'done') {
+      es.close();
+      avStartBtn.disabled = false;
+      avDownload.href = `${API}/autovideo/download/${data.file_id}`;
+      avDownload.download = `${data.title || topic}.mp4`;
+      document.getElementById('av-result-title').textContent = data.title || topic;
+      renderAvScript(data.script);
+      avResult.classList.remove('hidden');
+    }
+  };
+  es.onerror = () => {
+    avErrorMsg.textContent = '서버 연결이 끊어졌습니다.';
+    avErrorCard.classList.remove('hidden');
+    es.close();
+    avStartBtn.disabled = false;
+  };
 });
 
-function renderScript(script) {
-  document.getElementById('script-title-label').textContent = script.title || script.topic;
-  const list = document.getElementById('script-sections-list');
+function renderAvScript(script) {
+  if (!script) return;
+  const list = document.getElementById('av-script-sections');
   list.innerHTML = '';
   (script.sections || []).forEach(sec => {
     const el = document.createElement('div');
@@ -840,42 +937,15 @@ function renderScript(script) {
     `;
     list.appendChild(el);
   });
-  scriptDraftLabel.textContent = '';
 }
 
-scriptDraftBtn.addEventListener('click', async () => {
-  if (!currentScript) return;
-  scriptDraftBtn.disabled = true;
-  scriptDraftBtn.textContent = '드래프트 생성 중…';
-  scriptDraftLabel.textContent = '';
-
-  try {
-    const resp = await fetch(`${API}/script/draft`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ script: currentScript }),
-    });
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-      throw new Error(err.detail || resp.statusText);
-    }
-    const data = await resp.json();
-    scriptDraftLabel.textContent = `드래프트: ${data.draft_name}`;
-  } catch (e) {
-    scriptErrorMsg.textContent = e.message;
-    scriptErrorCard.classList.remove('hidden');
-  } finally {
-    scriptDraftBtn.disabled = false;
-    scriptDraftBtn.textContent = 'CapCut 드래프트 생성';
-  }
-});
-
-scriptResetBtn.addEventListener('click', () => {
-  currentScript = null;
-  scriptResult.classList.add('hidden');
-  scriptErrorCard.classList.add('hidden');
-  document.getElementById('script-topic').value = '';
-  scriptDraftLabel.textContent = '';
+avResetBtn.addEventListener('click', () => {
+  avPipeline.classList.add('hidden');
+  avResult.classList.add('hidden');
+  avErrorCard.classList.add('hidden');
+  document.getElementById('av-topic').value = '';
+  avResetStages();
+  avStartBtn.disabled = false;
 });
 </script>
 </body>

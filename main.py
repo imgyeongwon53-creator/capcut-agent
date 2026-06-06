@@ -31,6 +31,8 @@ app.add_middleware(
 )
 
 _uploads: Dict[str, Dict[str, Any]] = {}
+_autovideo_jobs: Dict[str, Dict[str, Any]] = {}
+_generated: Dict[str, str] = {}  # file_id → output path
 
 
 @app.get("/")
@@ -138,6 +140,91 @@ async def video(file_id: str):
     if file_id not in _uploads:
         raise HTTPException(404, "파일을 찾을 수 없습니다.")
     return FileResponse(_uploads[file_id]["path"])
+
+
+@app.post("/autovideo/start")
+async def autovideo_start(request: Request):
+    body = await request.json()
+    topic = (body.get("topic") or "").strip()
+    if not topic:
+        raise HTTPException(400, "topic이 필요합니다.")
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise HTTPException(400, "ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다.")
+    job_id = str(uuid.uuid4())
+    _autovideo_jobs[job_id] = {
+        "topic": topic,
+        "duration_minutes": float(body.get("duration_minutes", 5)),
+        "num_sections": int(body.get("num_sections", 3)),
+    }
+    return {"job_id": job_id}
+
+
+@app.get("/autovideo/stream/{job_id}")
+async def autovideo_stream(job_id: str):
+    if job_id not in _autovideo_jobs:
+        raise HTTPException(404, "작업을 찾을 수 없습니다.")
+    params = _autovideo_jobs.pop(job_id)
+
+    queue: asyncio.Queue = asyncio.Queue()
+
+    def sse(stage: str, status: str, **kwargs) -> str:
+        return f"data: {json.dumps({'stage': stage, 'status': status, **kwargs}, ensure_ascii=False)}\n\n"
+
+    async def run_pipeline():
+        try:
+            from core.script_generator_claude import generate_script
+            from core.video_generator import generate_video
+
+            # Step 1: Script
+            await queue.put(sse("script", "start"))
+            loop = asyncio.get_event_loop()
+            script = await loop.run_in_executor(
+                None, generate_script,
+                params["topic"], params["duration_minutes"], params["num_sections"]
+            )
+            await queue.put(sse("script", "done",
+                               title=script.get("title", params["topic"]),
+                               sections=len(script.get("sections", []))))
+
+            # Step 2-4: TTS + audio concat + render (progress via on_progress)
+            async def on_progress(stage: str, status: str, data: dict):
+                await queue.put(sse(stage, status, **data))
+
+            output_path = await generate_video(script, on_progress=on_progress)
+
+            file_id = str(uuid.uuid4())
+            _generated[file_id] = output_path
+            await queue.put(sse("done", "done",
+                               file_id=file_id,
+                               title=script.get("title", params["topic"]),
+                               script=script))
+        except Exception as exc:
+            await queue.put(sse("error", "error", message=str(exc)))
+        finally:
+            await queue.put(None)
+
+    async def event_stream():
+        asyncio.create_task(run_pipeline())
+        while True:
+            item = await queue.get()
+            if item is None:
+                break
+            yield item
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.get("/autovideo/download/{file_id}")
+async def autovideo_download(file_id: str):
+    if file_id not in _generated:
+        raise HTTPException(404, "파일을 찾을 수 없습니다.")
+    path = _generated[file_id]
+    filename = Path(path).name
+    return FileResponse(path, media_type="video/mp4", filename=filename)
 
 
 @app.get("/script/capabilities")
