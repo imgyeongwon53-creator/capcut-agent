@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import uuid
@@ -17,6 +18,7 @@ from core.silence import compute_keep_segments, detect_silence, get_duration
 from core.asr import transcribe
 from core.filler import compute_final_keeps
 from core.draft_builder import build_draft
+from core.text_draft_builder import build_script_draft
 
 app = FastAPI(title="CapCut Agent")
 
@@ -136,6 +138,43 @@ async def video(file_id: str):
     if file_id not in _uploads:
         raise HTTPException(404, "파일을 찾을 수 없습니다.")
     return FileResponse(_uploads[file_id]["path"])
+
+
+@app.get("/script/capabilities")
+async def script_capabilities():
+    has_key = bool(os.environ.get("ANTHROPIC_API_KEY", ""))
+    return {"claude": has_key}
+
+
+@app.post("/script/generate")
+async def script_generate(request: Request):
+    body = await request.json()
+    topic = (body.get("topic") or "").strip()
+    if not topic:
+        raise HTTPException(400, "topic이 필요합니다.")
+    duration_minutes = float(body.get("duration_minutes", 5))
+    num_sections = int(body.get("num_sections", 3))
+
+    from core.script_generator_claude import generate_script
+    loop = asyncio.get_event_loop()
+    try:
+        script = await loop.run_in_executor(
+            None, generate_script, topic, duration_minutes, num_sections
+        )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    return script
+
+
+@app.post("/script/draft")
+async def script_draft(request: Request):
+    body = await request.json()
+    script = body.get("script")
+    if not script:
+        raise HTTPException(400, "script가 필요합니다.")
+    stem = re.sub(r"[^\w가-힣]", "_", script.get("topic", "script"))[:32]
+    draft_name = await build_script_draft(script, stem)
+    return {"draft_name": draft_name}
 
 
 @app.get("/config")

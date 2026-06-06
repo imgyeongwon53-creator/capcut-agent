@@ -234,6 +234,79 @@
 
   .divider { border: none; border-top: 1px solid var(--border); }
 
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -1px;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: flex; flex-direction: column; gap: 24px; }
+
+  /* Script generation */
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-label { font-size: 13px; font-weight: 500; color: var(--muted); }
+  .form-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  select.form-input { cursor: pointer; }
+
+  .script-section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .script-section-heading {
+    font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 6px;
+  }
+  .script-section-meta {
+    font-size: 11px; color: var(--muted); margin-bottom: 8px;
+  }
+  .script-section-text {
+    font-size: 13px; line-height: 1.6; color: var(--text); white-space: pre-wrap;
+  }
+  .kp-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .kp-chip {
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    background: rgba(34,197,94,.1); color: var(--accent);
+    border: 1px solid rgba(34,197,94,.2);
+  }
+
+  .api-warning {
+    background: rgba(239,68,68,.08);
+    border: 1px solid rgba(239,68,68,.25);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    color: var(--error);
+    font-size: 13px;
+  }
+
   footer {
     margin-top: auto;
     padding: 24px;
@@ -254,11 +327,21 @@
 <div class="container">
   <div class="header">
     <h1>CapCut Agent</h1>
-    <p>한국어 강의 영상 자동 편집</p>
+    <p>한국어 강의 영상 자동 편집 · AI 스크립트 생성</p>
   </div>
 
+  <!-- Tabs -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="edit">🎬 영상 편집</button>
+      <button class="tab-btn" data-tab="script">✍️ 스크립트 생성</button>
+    </div>
+
+    <!-- Edit tab -->
+    <div class="tab-panel active" id="tab-edit" style="padding:20px">
+
   <!-- Upload card -->
-  <div class="card">
+  <div class="card" style="border:none;padding:0">
     <div id="dropzone">
       <input type="file" id="file-input" accept=".mp4,.mov">
       <div id="drop-placeholder">
@@ -314,7 +397,7 @@
   </div>
 
   <!-- Results -->
-  <div class="card hidden" id="result-card">
+  <div class="card hidden" id="result-card" style="border:none;padding:0">
     <div class="section-label">편집 결과</div>
     <div class="stats-grid">
       <div class="stat-card">
@@ -350,6 +433,63 @@
     </div>
     <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center" id="draft-name-label"></div>
   </div>
+
+    </div><!-- /tab-edit -->
+
+    <!-- Script tab -->
+    <div class="tab-panel" id="tab-script" style="padding:20px">
+
+      <div id="script-api-warning" class="api-warning hidden">
+        ANTHROPIC_API_KEY 환경변수가 설정되지 않았습니다. 서버에서 키를 설정해주세요.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="script-topic">주제 / 강의 제목</label>
+        <input type="text" id="script-topic" class="form-input" placeholder="예: 파이썬 기초 - 리스트와 딕셔너리">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="script-duration">영상 길이 (분)</label>
+          <select id="script-duration" class="form-input">
+            <option value="3">3분</option>
+            <option value="5" selected>5분</option>
+            <option value="10">10분</option>
+            <option value="15">15분</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="script-sections">섹션 수</label>
+          <select id="script-sections" class="form-input">
+            <option value="3" selected>3개 (도입·본론·마무리)</option>
+            <option value="4">4개</option>
+            <option value="5">5개</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="script-generate-btn">AI 스크립트 생성</button>
+
+      <!-- Script result -->
+      <div id="script-result" class="hidden">
+        <div class="section-label" id="script-title-label"></div>
+        <div id="script-sections-list" style="display:flex;flex-direction:column;gap:10px"></div>
+        <hr class="divider" style="margin:4px 0">
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline" id="script-draft-btn">CapCut 드래프트 생성</button>
+          <button class="btn btn-ghost" id="script-reset-btn" style="width:auto;padding:10px 16px">초기화</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:var(--muted);text-align:center" id="script-draft-label"></div>
+      </div>
+
+      <!-- Script error -->
+      <div class="hidden" id="script-error-card">
+        <div class="error-box" id="script-error-msg"></div>
+      </div>
+
+    </div><!-- /tab-script -->
+
+  </div><!-- /tabs card -->
 
 </div>
 
@@ -618,6 +758,125 @@ function doReset() {
 
 resetBtn.addEventListener('click', doReset);
 newVideoBtn.addEventListener('click', doReset);
+
+// ── Tabs ────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Check API key availability on load
+fetch(`${API}/script/capabilities`)
+  .then(r => r.json())
+  .then(d => {
+    if (!d.claude) {
+      document.getElementById('script-api-warning').classList.remove('hidden');
+      document.getElementById('script-generate-btn').disabled = true;
+    }
+  })
+  .catch(() => {});
+
+// ── Script generation ────────────────────────────────────────────────────────
+const scriptGenerateBtn = document.getElementById('script-generate-btn');
+const scriptResult      = document.getElementById('script-result');
+const scriptErrorCard   = document.getElementById('script-error-card');
+const scriptErrorMsg    = document.getElementById('script-error-msg');
+const scriptDraftBtn    = document.getElementById('script-draft-btn');
+const scriptResetBtn    = document.getElementById('script-reset-btn');
+const scriptDraftLabel  = document.getElementById('script-draft-label');
+
+let currentScript = null;
+
+scriptGenerateBtn.addEventListener('click', async () => {
+  const topic = document.getElementById('script-topic').value.trim();
+  if (!topic) { alert('주제를 입력해주세요.'); return; }
+  const duration_minutes = parseFloat(document.getElementById('script-duration').value);
+  const num_sections     = parseInt(document.getElementById('script-sections').value, 10);
+
+  scriptGenerateBtn.disabled = true;
+  scriptGenerateBtn.textContent = '생성 중…';
+  scriptResult.classList.add('hidden');
+  scriptErrorCard.classList.add('hidden');
+
+  try {
+    const resp = await fetch(`${API}/script/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, duration_minutes, num_sections }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+      throw new Error(err.detail || resp.statusText);
+    }
+    currentScript = await resp.json();
+    renderScript(currentScript);
+    scriptResult.classList.remove('hidden');
+  } catch (e) {
+    scriptErrorMsg.textContent = e.message;
+    scriptErrorCard.classList.remove('hidden');
+  } finally {
+    scriptGenerateBtn.disabled = false;
+    scriptGenerateBtn.textContent = 'AI 스크립트 생성';
+  }
+});
+
+function renderScript(script) {
+  document.getElementById('script-title-label').textContent = script.title || script.topic;
+  const list = document.getElementById('script-sections-list');
+  list.innerHTML = '';
+  (script.sections || []).forEach(sec => {
+    const el = document.createElement('div');
+    el.className = 'script-section';
+    const kps = (sec.key_points || []).map(k => `<span class="kp-chip">${escHtml(k)}</span>`).join('');
+    el.innerHTML = `
+      <div class="script-section-heading">${escHtml(sec.heading)}</div>
+      <div class="script-section-meta">${sec.duration_seconds}초</div>
+      <div class="script-section-text">${escHtml(sec.script)}</div>
+      ${kps ? `<div class="kp-list">${kps}</div>` : ''}
+    `;
+    list.appendChild(el);
+  });
+  scriptDraftLabel.textContent = '';
+}
+
+scriptDraftBtn.addEventListener('click', async () => {
+  if (!currentScript) return;
+  scriptDraftBtn.disabled = true;
+  scriptDraftBtn.textContent = '드래프트 생성 중…';
+  scriptDraftLabel.textContent = '';
+
+  try {
+    const resp = await fetch(`${API}/script/draft`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ script: currentScript }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+      throw new Error(err.detail || resp.statusText);
+    }
+    const data = await resp.json();
+    scriptDraftLabel.textContent = `드래프트: ${data.draft_name}`;
+  } catch (e) {
+    scriptErrorMsg.textContent = e.message;
+    scriptErrorCard.classList.remove('hidden');
+  } finally {
+    scriptDraftBtn.disabled = false;
+    scriptDraftBtn.textContent = 'CapCut 드래프트 생성';
+  }
+});
+
+scriptResetBtn.addEventListener('click', () => {
+  currentScript = null;
+  scriptResult.classList.add('hidden');
+  scriptErrorCard.classList.add('hidden');
+  document.getElementById('script-topic').value = '';
+  scriptDraftLabel.textContent = '';
+});
 </script>
 </body>
 </html>
