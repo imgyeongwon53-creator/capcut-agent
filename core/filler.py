@@ -13,7 +13,7 @@ def detect_filler_cuts(segments: List[Dict[str, Any]]) -> List[Tuple[float, floa
     for seg in segments:
         for w in seg.get("words", []):
             word = w["word"].strip()
-            if word in FILLER_WORDS or w["probability"] < FILLER_PROBABILITY_THRESHOLD:
+            if word in FILLER_WORDS:
                 cuts.append((w["start"], w["end"]))
     return cuts
 
