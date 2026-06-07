@@ -279,18 +279,6 @@
     </div>
   </div>
 
-  <!-- Settings -->
-  <div class="card" style="padding:14px 20px">
-    <div style="display:flex;align-items:center;gap:12px">
-      <span style="font-size:13px;color:var(--muted);flex-shrink:0">목표 길이</span>
-      <input type="number" id="target-seconds" value="15" min="0" max="3600"
-             style="width:72px;background:var(--bg);border:1px solid var(--border);
-                    border-radius:var(--radius);padding:6px 10px;color:var(--text);
-                    font-size:14px;outline:none;">
-      <span style="font-size:13px;color:var(--muted)">초&nbsp;&nbsp;·&nbsp;&nbsp;0 = 제한 없음</span>
-    </div>
-  </div>
-
   <!-- Start button -->
   <button class="btn btn-primary" id="start-btn" disabled>편집 시작</button>
 
@@ -517,11 +505,7 @@ function setStage(stage, status, info = '') {
 }
 
 function runPipeline(fileId) {
-  const targetSec = parseFloat(document.getElementById('target-seconds').value) || 0;
-  const url = targetSec > 0
-    ? `${API}/process/${fileId}?target_seconds=${targetSec}`
-    : `${API}/process/${fileId}`;
-  const es = new EventSource(url);
+  const es = new EventSource(`${API}/process/${fileId}`);
 
   es.onmessage = (e) => {
     const data = JSON.parse(e.data);
