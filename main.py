@@ -60,8 +60,24 @@ async def upload(file: UploadFile = File(...)):
     return {"file_id": file_id, "filename": file.filename}
 
 
+def _trim_keeps(keeps, target_seconds: float):
+    """Cut keeps list so total duration <= target_seconds."""
+    result, total = [], 0.0
+    for start, end in keeps:
+        seg_dur = end - start
+        if total + seg_dur <= target_seconds:
+            result.append((start, end))
+            total += seg_dur
+        else:
+            remaining = target_seconds - total
+            if remaining > 0.05:
+                result.append((start, start + remaining))
+            break
+    return result
+
+
 @app.get("/process/{file_id}")
-async def process(file_id: str):
+async def process(file_id: str, target_seconds: float = 0):
     if file_id not in _uploads:
         raise HTTPException(404, "파일을 찾을 수 없습니다.")
 
@@ -93,6 +109,8 @@ async def process(file_id: str):
             # Stage 3: Filler/NG detection
             yield sse("filler", "start")
             final_keeps, cuts = compute_final_keeps(keeps, segments)
+            if target_seconds > 0:
+                final_keeps = _trim_keeps(final_keeps, target_seconds)
             yield sse("filler", "done",
                       cut_count=len(cuts),
                       keep_count=len(final_keeps))
