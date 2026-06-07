@@ -110,7 +110,12 @@ async def process(file_id: str, target_seconds: float = 0):
             yield sse("filler", "start")
             final_keeps, cuts = compute_final_keeps(keeps, segments)
             if target_seconds > 0:
-                final_keeps = _trim_keeps(final_keeps, target_seconds)
+                final_total = sum(e - s for s, e in final_keeps)
+                if final_total < target_seconds:
+                    # 편집 후 내용이 목표보다 짧으면 무음 제거본(keeps)으로 채움
+                    final_keeps = _trim_keeps(keeps, target_seconds)
+                else:
+                    final_keeps = _trim_keeps(final_keeps, target_seconds)
             yield sse("filler", "done",
                       cut_count=len(cuts),
                       keep_count=len(final_keeps))
