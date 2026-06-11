@@ -1,0 +1,31 @@
+{
+  "name": "capcut-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "generate": "ts-node --project tsconfig.json src/index.ts",
+    "preview": "remotion preview src/Root.tsx",
+    "render": "remotion render src/Root.tsx MotionGraphic out/motion-graphic.mp4",
+    "render:still": "remotion still src/Root.tsx MotionGraphic out/preview.png"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:43887/git/imgyeongwon53-creator/capcut-agent"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@remotion/cli": "^4.0.475",
+    "@remotion/player": "^4.0.475",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "remotion": "^4.0.475",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  }
+}
